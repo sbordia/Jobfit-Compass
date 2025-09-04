@@ -70,6 +70,24 @@ npm run dev
 - **Backend**: Next.js API Routes
 - **AI**: OpenAI GPT-4o-mini
 - **PDF Processing**: pdf-parse
+- **Deployment**: Vercel-ready configuration
+
+## Deployment
+
+This application is configured for seamless deployment to cloud platforms:
+
+### Vercel Deployment
+The project includes Vercel-optimized configuration:
+- Environment variable management
+- Automatic builds and deployments
+- Production-ready Next.js setup
+- Zero-config deployment pipeline
+
+To deploy:
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Configure environment variables
+4. Deploy with one click
 
 ## Contributing
 
