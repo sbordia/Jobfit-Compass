@@ -1,7 +1,7 @@
 ## Example Output
 
 ![Jobfit Compass Output](output.png)
-# Resume Job Fit Analyzer
+# Resume Jobfit Compass
 
 An AI-powered application that analyzes how well your resume matches a job posting and provides detailed feedback and improvement suggestions.
 
