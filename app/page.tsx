@@ -15,6 +15,7 @@ type FitAnalysis = {
 };
 
 export default function Home() {
+  const resultsRef = React.useRef<HTMLDivElement>(null);
   const [jobUrl, setJobUrl] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [resumeUrl, setResumeUrl] = useState("");
@@ -77,6 +78,12 @@ export default function Home() {
 
       const data = await res.json();
       setResult(data);
+      // Scroll to results after they appear
+      setTimeout(() => {
+        if (resultsRef.current) {
+          resultsRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
     } catch (err: any) {
       console.error("Submit error", err);
       setError(err.message || "Something went wrong");
@@ -84,172 +91,72 @@ export default function Home() {
       setLoading(false);
     }
   }
-
   return (
-    <main className="container py-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Job Fit Assessor</h1>
-        <p className="text-gray-600 mt-1">
-          Paste a job link and your resume (URL or PDF). Instantly see if this job is a good fit for you&mdash;and whether you should apply or save your time.
-        </p>
-      </div>
-
-      <form onSubmit={onSubmit} className="card p-5 space-y-4">
-        {/* Job Input Section */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Job Information</h2>
-
-          <div className="flex space-x-4">
-            <button
-              type="button"
-              onClick={() => setUseTextarea(false)}
-              className={`px-4 py-2 rounded ${!useTextarea ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            >
-              Use URL
-            </button>
-            <button
-              type="button"
-              onClick={() => setUseTextarea(true)}
-              className={`px-4 py-2 rounded ${useTextarea ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            >
-              Paste Job Description
-            </button>
-          </div>
-
-          {useTextarea ? (
-            <textarea
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              placeholder="Paste the job description here..."
-              className="w-full p-3 border rounded-lg h-40"
-              required
-            />
-          ) : (
-            <input
-              type="url"
-              value={jobUrl}
-              onChange={(e) => setJobUrl(e.target.value)}
-              placeholder="Enter job posting URL"
-              className="w-full p-3 border rounded-lg"
-              required
-            />
-          )}
-        </div>
-
-        {/* Resume Section */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Resume</h2>
-
-          <input
-            type="url"
-            value={resumeUrl}
-            onChange={(e) => setResumeUrl(e.target.value)}
-            placeholder="Resume URL (optional)"
-            className="w-full p-3 border rounded-lg"
-          />
-
-          <div className="text-center">OR</div>
-
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="w-full p-3 border rounded-lg"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-500 text-white p-3 rounded-lg font-semibold hover:bg-blue-600 disabled:opacity-50"
-        >
-          {loading ? 'Analyzing...' : 'Analyze Job Fit'}
-        </button>
-        {error && <p className="text-red-600">{error}</p>}
-      </form>
-
-      {/* Results */}
-      {result && (
-        <div className="mt-8 space-y-6">
-          {result.error ? (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              Error: {result.error}
+    <div className="w-full max-w-6xl mx-auto my-12 flex flex-col md:flex-row gap-8">
+      {/* Left Panel: Form */}
+      <div className="flex-1 bg-white rounded-3xl shadow-2xl border border-gray-100 p-10 flex flex-col gap-8">
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight text-center">Jobfit Compass</h1>
+        <p className="text-lg text-gray-500 mb-8 text-center">Get an instant, AI-powered resume fit analysis for any job posting.</p>
+        <form onSubmit={onSubmit} className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4 bg-gray-50 rounded-2xl p-6 shadow-sm">
+            <label className="block text-base font-semibold text-gray-700 mb-1">Job Description</label>
+            <div className="flex gap-3 mb-2">
+              <button type="button" className={`px-4 py-2 rounded-xl text-sm font-semibold border transition ${!useTextarea ? 'bg-indigo-100 text-indigo-700 border-indigo-300 shadow' : 'bg-white text-gray-500 border-gray-200'}`} onClick={() => setUseTextarea(false)}>URL</button>
+              <button type="button" className={`px-4 py-2 rounded-xl text-sm font-semibold border transition ${useTextarea ? 'bg-indigo-100 text-indigo-700 border-indigo-300 shadow' : 'bg-white text-gray-500 border-gray-200'}`} onClick={() => setUseTextarea(true)}>Paste</button>
             </div>
-          ) : (
-            <>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-2">Fit Assessment</h2>
-                <p className="text-lg font-medium text-blue-600">{result.fitLevel}</p>
-                <p className="mt-2">{result.recommendation}</p>
-                {result.matchScore !== undefined && (
-                  <p className="mt-2 text-sm text-gray-600">Match Score: {result.matchScore}/100</p>
-                )}
+            {useTextarea ? (
+              <textarea className="input h-28 resize-none text-base" value={jobDescription} onChange={e => setJobDescription(e.target.value)} placeholder="Paste job description here" />
+            ) : (
+              <input className="input text-base" value={jobUrl} onChange={e => setJobUrl(e.target.value)} placeholder="Paste job URL" />
+            )}
+          </div>
+          <div className="flex flex-col gap-4 bg-gray-50 rounded-2xl p-6 shadow-sm">
+            <label className="block text-base font-semibold text-gray-700 mb-1">Resume</label>
+            <input className="input text-base" value={resumeUrl} onChange={e => setResumeUrl(e.target.value)} placeholder="Paste resume URL (optional)" />
+            <div className="text-sm text-gray-400 my-1 text-center">or upload PDF</div>
+            <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files?.[0] || null)} className="input text-base" />
+          </div>
+          <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-indigo-700 transition disabled:opacity-50 text-lg" disabled={loading}>
+            {loading ? "Analyzing..." : "Analyze Fit"}
+          </button>
+          {error && <div className="text-red-600 text-base text-center mt-2 font-semibold">{error}</div>}
+        </form>
+      </div>
+      {/* Right Panel: Results */}
+  <div ref={resultsRef} className="flex-1 bg-white rounded-3xl shadow-2xl border border-gray-100 p-10 flex flex-col gap-8 min-h-[400px]">
+        {result ? (
+          <div className="flex flex-col gap-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Results</h2>
+            <div className="flex items-center gap-3 mb-4 justify-center">
+              <span className={`inline-block px-4 py-2 rounded-full text-base font-bold ${result.matchScore > 70 ? 'bg-green-100 text-green-700' : result.matchScore > 40 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>{result.fitLevel}</span>
+              <span className="text-sm text-gray-400">Score</span>
+              <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden mx-2 max-w-xs">
+                <div className="h-full bg-indigo-600" style={{ width: `${result.matchScore}%` }} />
               </div>
-
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">AI Analysis</h2>
-                <div className="space-y-4">
-                  <div 
-                    className="text-sm leading-relaxed space-y-3"
-                    dangerouslySetInnerHTML={{
-                      __html: (result.explanation || "")
-                        .toString()
-                        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
-                        .replace(/(\d+\.\s\*\*[^*]+\*\*:)/g, '<br/><strong class="text-blue-600">$1</strong>')
-                        .replace(/(Job Requirements|Resume Skills|Skill Matches|Missing Skills|Required Experience|Candidate Experience|Project Alignment|Evidence Found):/g, '<br/><strong class="font-medium text-gray-800">$1:</strong>')
-                        .replace(/- ([^\n]+)/g, '<br/>• $1')
-                        .replace(/\n/g, '<br/>')
-                        .replace(/<br\/><br\/>/g, '<br/>')
-                    }}
-                  />
-                  
-                  {result.matchScore && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-700">Match Score Breakdown:</span>
-                        <span className="text-lg font-bold text-blue-600">{result.matchScore}/100</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+              <span className="text-base font-bold text-indigo-700">{result.matchScore}/100</span>
+            </div>
+            <div className="mb-2 text-gray-700 font-semibold text-center">{result.recommendation}</div>
+            <div className="text-gray-500 text-base mb-2 whitespace-pre-line text-center">{result.explanation}</div>
+            {result.improvements && (
+              <div className="mt-2 p-4 bg-green-50 border-l-4 border-green-400 rounded-2xl text-green-700 text-base font-medium">
+                <span className="font-bold">Improvements:</span> {result.improvements}
               </div>
-
-              {result.improvements && (
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-2 text-green-700">📈 Specific Improvements</h2>
-                  <div 
-                    className="text-sm leading-relaxed space-y-2"
-                    dangerouslySetInnerHTML={{
-                      __html: (result.improvements || "")
-                        .toString()
-                        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
-                        .replace(/- /g, '<br/>• ')
-                        .replace(/\n/g, '<br/>')
-                        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline hover:text-blue-800">$1</a>')
-                    }}
-                  />
-                </div>
-              )}
-
-              {result.previews && (
-                <details className="bg-gray-50 p-4 rounded-lg">
-                  <summary className="cursor-pointer font-medium">View Extracted Content</summary>
-                  <div className="mt-4 space-y-4">
-                    <div>
-                      <h3 className="font-medium">Job Description (extracted)</h3>
-                      <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{result.previews.jobText}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Resume (extracted)</h3>
-                      <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{result.previews.resumeText}</p>
-                    </div>
-                  </div>
-                </details>
-              )}
-            </>
-          )}
-        </div>
-      )}
-    </main>
+            )}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="font-medium text-sm text-gray-400 mb-2">Job Preview</h3>
+                <pre className="bg-gray-50 p-4 rounded-2xl text-sm whitespace-pre-wrap border border-gray-100">{result.previews.jobText}</pre>
+              </div>
+              <div>
+                <h3 className="font-medium text-sm text-gray-400 mb-2">Resume Preview</h3>
+                <pre className="bg-gray-50 p-4 rounded-2xl text-sm whitespace-pre-wrap border border-gray-100">{result.previews.resumeText}</pre>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-gray-400 text-lg font-medium">Results will appear here after analysis.</div>
+        )}
+      </div>
+    </div>
   );
 }
